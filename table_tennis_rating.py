@@ -7,10 +7,25 @@ import getopt
 import csv
 from defaultlist import defaultlist
 
+def delta_calculation(curr_rating, curr_opp_rating, score):
+    """
+        Calculate delta for rating using information about score
+    """
+    left, _, right = score.partition(":")
+    delta = 0
+    if left > right:
+        if (curr_rating - curr_opp_rating) >= 100:
+            return 0
+        delta = (100 - (curr_rating - curr_opp_rating)) / 10
+    else:
+        if (curr_rating - curr_opp_rating) <= -100:
+            return 0
+        delta = -(100 - (curr_rating - curr_opp_rating)) / 20
+    return delta
 
 def update_rating(source_file, output_file):
     """
-    Update rating using infcormation from results table in csv format
+    Update rating using information from results table in csv format
     """
     row_count = 0
     results = defaultlist(list)
@@ -32,16 +47,15 @@ def update_rating(source_file, output_file):
         for i in range(start_column, row_count - 1 + start_column):
             if ':' not in row[i]:
                 continue
-            left, _, right = row[i].partition(":")
+            score = row[i]
             curr_opp_rating = float(results[i - start_column + 1][curr_rating_column])
-            if left > right:
-                if (curr_rating - curr_opp_rating) >= 100:
-                    continue
-                new_rating += (100 - (curr_rating - curr_opp_rating)) / 10
+            if '+' in row[i]:
+                first, _, second = row[i].partition("+")
+                new_rating += delta_calculation(curr_rating, curr_opp_rating, first)
+                new_rating += delta_calculation(curr_rating, curr_opp_rating, second)
             else:
-                if (curr_rating - curr_opp_rating) <= -100:
-                    continue
-                new_rating += -(100 - (curr_rating - curr_opp_rating)) / 20
+                new_rating += delta_calculation(curr_rating, curr_opp_rating, score)
+
         row.append("{:.1f}".format(new_rating))
     with open(output_file, 'w') as outfile:
         wr = csv.writer(outfile, delimiter=',')
