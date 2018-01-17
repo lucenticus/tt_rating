@@ -44,17 +44,21 @@ def update_rating(source_file, output_file):
             continue
         curr_rating = float(row[curr_rating_column])
         new_rating = curr_rating
+        curr_name = row[curr_rating_column + 1]
         for i in range(start_column, row_count - 1 + start_column):
             if ':' not in row[i]:
                 continue
             score = row[i]
             curr_opp_rating = float(results[i - start_column + 1][curr_rating_column])
+            opp_name = results[i - start_column + 1][curr_rating_column + 1]
             if '+' in row[i]:
-                first, _, second = row[i].partition("+")
-                new_rating += delta_calculation(curr_rating, curr_opp_rating, first)
-                new_rating += delta_calculation(curr_rating, curr_opp_rating, second)
-            else:
-                new_rating += delta_calculation(curr_rating, curr_opp_rating, score)
+                first, _, score = row[i].partition("+")
+                delta = delta_calculation(curr_rating, curr_opp_rating, first)
+                new_rating += delta
+                print(curr_name + ',' + opp_name + ',' + first + ',' + str(delta))
+            delta = delta_calculation(curr_rating, curr_opp_rating, score)
+            new_rating += delta
+            print(curr_name + ',' + opp_name + ',' + score + ',' + str(delta))
 
         row.append("{:.1f}".format(new_rating))
     with open(output_file, 'w') as outfile:
