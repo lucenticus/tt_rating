@@ -9,7 +9,7 @@ from defaultlist import defaultlist
 
 def delta_calculation(curr_rating, curr_opp_rating, score):
     """
-        Calculate delta for rating using information about score
+    Calculate delta for rating using information about score
     """
     left, _, right = score.partition(":")
     delta = 0
@@ -20,7 +20,7 @@ def delta_calculation(curr_rating, curr_opp_rating, score):
     else:
         if (curr_rating - curr_opp_rating) <= -100:
             return 0
-        delta = -(100 - (curr_rating - curr_opp_rating)) / 20
+        delta = -(100 - (curr_opp_rating - curr_rating)) / 20
     return delta
 
 def update_rating(source_file, output_file):
