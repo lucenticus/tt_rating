@@ -23,7 +23,7 @@ def delta_calculation(curr_rating, curr_opp_rating, score):
         delta = -(100 - (curr_opp_rating - curr_rating)) / 20
     return delta
 
-def update_rating(source_file, output_file):
+def update_rating(source_file, output_file, is_pair):
     """
     Update rating using information from results table in csv format
     """
@@ -35,6 +35,10 @@ def update_rating(source_file, output_file):
             results[row_count] = row
             row_count += 1
     start_column = 3
+
+    if is_pair:
+        start_column += 3
+
     curr_rating_column = 1
     is_first_line = True
     for row in results:
@@ -45,12 +49,16 @@ def update_rating(source_file, output_file):
         curr_rating = float(row[curr_rating_column])
         new_rating = curr_rating
         curr_name = row[curr_rating_column + 1]
+        if is_pair:
+            curr_name += '+' + row[curr_rating_column + 3]
         for i in range(start_column, row_count - 1 + start_column):
             if ':' not in row[i]:
                 continue
             score = row[i]
             curr_opp_rating = float(results[i - start_column + 1][curr_rating_column])
             opp_name = results[i - start_column + 1][curr_rating_column + 1]
+            if is_pair:
+                opp_name += '+' + results[i - start_column + 1][curr_rating_column + 3]
             if '+' in row[i]:
                 first, _, score = row[i].partition("+")
                 delta = delta_calculation(curr_rating, curr_opp_rating, first)
@@ -71,13 +79,14 @@ def usage():
     """
     Print usage message
     """
-    print('table_tennis_rating.py -s <results.csv> -o <results-rating.csv>')
+    print('table_tennis_rating.py -s <results.csv> -o <results-rating.csv> [-p]')
 
 def run_script():
     source_file = ""
     output_file = ""
+    is_pair = False
     try:
-        opts, _ = getopt.getopt(sys.argv[1:], "hs:o:", ["source=", "output="])
+        opts, _ = getopt.getopt(sys.argv[1:], "hps:o:", ["help", "pair", "source=", "output="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -89,7 +98,9 @@ def run_script():
             source_file = arg
         elif opt in ("-o", "--output"):
             output_file = arg
-    update_rating(source_file, output_file)
+        elif opt in ("-p", "--pair"):
+            is_pair = True
+    update_rating(source_file, output_file, is_pair)
 
 if __name__ == "__main__":
     run_script()
